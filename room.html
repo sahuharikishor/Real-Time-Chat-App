@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Real Time Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #e5ddd5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-box {
+            width: 100%;
+            max-width: 420px;
+            height: 95vh;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            background: #075e54;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #efeae2;
+        }
+
+        .msg {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        /* RECEIVER */
+        .left {
+            align-self: flex-start;
+            background: #ffffff;
+            border-top-left-radius: 0;
+        }
+
+        /* SENDER */
+        .right {
+            align-self: flex-end;
+            background: #dcf8c6;
+            border-top-right-radius: 0;
+        }
+
+        .time {
+            font-size: 10px;
+            color: #555;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .input-box {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+            border-top: 1px solid #ddd;
+        }
+
+        .input-box #message {
+            flex: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        .input-box .submit {
+            margin-left: 8px;
+            padding: 10px 30px;
+            border: none;
+            background: #075e54;
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="chat-box">
+        <div class="header">
+            <span>💬 Chat Room</span>
+            <span style="color: #d9fdd3; font-weight:500;">{{room}}</span>
+
+        </div>
+
+
+
+        <div class="messages" id="messages"></div>
+
+        <div>
+            <form id="post-form" class="input-box" method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="username" id="username" value="{{ username }}">
+                <input type="hidden" name="room_id" id="room_id" value="{{ room_details.id }}">
+                <input type="text" id="message" name="message" placeholder="Type message..." autocomplete="off">
+                <input class="submit" type="submit" value="Send">
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-4.0.0.js"></script>
+
+    <!-- this logic for message show in message app -->
+
+    <script>
+        let lastMessageId = 0;
+
+        $(document).ready(function () {
+
+            let shouldScroll = true;
+
+            // detect user scroll
+            $('#messages').on('scroll', function () {
+                let element = this;
+
+                // user bottom ke paas hai ya nahi
+                shouldScroll =
+                    element.scrollHeight - element.scrollTop - element.clientHeight < 50;
+            });
+
+            //  Fetch messages every 1 second
+            setInterval(function () {
+                $.ajax({
+                    type: 'GET',
+                    url: '/getMessages/{{ room }}/',   
+                    success: function (response) {
+
+                        response.messages.forEach(function (msg) {
+
+                            //  Only new messages
+                            if (msg.id > lastMessageId) {
+
+                                let side = (msg.user === $('#username').val())
+                                    ? 'right'
+                                    : 'left';
+
+                                //  HH:MM time format
+                                let time = new Date(msg.date).toLocaleTimeString('en-IN', {
+                                    timeZone: 'Asia/Kolkata',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                                let temp = `
+                                <div class="msg ${side}">
+                                    ${msg.value}
+                                    <div class="time">${time}</div>
+                                </div>
+                            `;
+
+                                $('#messages').append(temp);
+                                lastMessageId = msg.id;
+                            }
+                        });
+
+                        // scroll only when user is at bottom
+                        if (shouldScroll) {
+                            let messagesBox = $('#messages')[0];
+                            messagesBox.scrollTop = messagesBox.scrollHeight;
+                        }
+                    }
+                });
+            }, 1000);
+        });
+    </script>
+    
+
+    <script>
+        $(document).on('submit', '#post-form', function (e) {
+            e.preventDefault()
+
+            $.ajax({
+                type: 'POST',
+                url: '/send/',
+                data: {
+                    username: $('#username').val(),
+                    room_id: $('#room_id').val(),
+                    message: $('#message').val(),
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+
+                },
+                success: function (data) {
+                    alert(data)
+                }
+
+            })
+            document.getElementById('message').value = ''
+        })
+
+    </script>
+
+
+</body>
+
+</html>

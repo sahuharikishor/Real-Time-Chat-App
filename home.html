@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Chat-App</title>
+</head>
+<style>
+    .login_box {
+        width: 700px;
+        height: 500px;
+        /* background-color:rgb(233, 228, 228); */
+        justify-self: center;
+        justify-items: center;
+        border-radius: 10px;
+    }
+
+    .hadding {
+        margin: 10px;
+        background-color: rgb(233, 228, 228);
+        width: 100%;
+        height: 80px;
+        justify-items: center;
+        align-content: center;
+        border-radius: 5px;
+        font-size: 25px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: 600;
+
+    }
+
+    .form-box {
+        background-color: rgb(233, 228, 228);
+        width: 100%;
+        height: 200px;
+
+
+        border-radius: 5px;
+        font-size: 15px;
+        font-family: 'Times New Roman', Times, serif;
+        font-weight: bold;
+    }
+    .input-group{
+        padding: 10px;
+        width: 650px;
+        height: 30px;
+    }
+    .input-group{
+        margin: 10px;
+        
+    }
+    input {
+        width: 100%;
+        height: 30px;
+        margin-top: 5px;
+        margin-bottom:px;
+        border-radius: 3px;
+        border: 1px solid grey;
+    }
+    input[type="submit"]{
+        width: 101%; 
+        height: 35px;
+        border: none;
+        border-radius: 3px;
+        color: white;
+        cursor: pointer;
+        background-color: green;
+
+    }
+    
+</style>
+
+<body>
+    <div class="login_box">
+
+        <div class="hadding">
+            <p>Chat App</p>
+        </div>
+        <div class="form-box">
+            <form id="post-form" method="POST" action="/checkview">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label>Room name</label><br>
+                    <input type="text" name="room_name" required><br>
+                </div>
+                <div class="input-group">
+                    <label>Username</label><br>
+                    <input type="text" name="username" required><br>
+                </div>
+                <div class="input-group submit-button">
+                    <input type="submit" value="Enter Room">
+                
+                </div>
+                
+            </form>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
